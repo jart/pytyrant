@@ -36,19 +36,66 @@ __all__ = [
     'RDBMONOULOG', 'RDBXOLCKREC', 'RDBXOLCKGLB',
 ]
 
-class TyrantError(Exception):
-    pass
-
-
 DEFAULT_PORT = 1978
 MAGIC = 0xc8
-
 
 RDBMONOULOG = 1 << 0
 RDBXOLCKREC = 1 << 0
 RDBXOLCKGLB = 1 << 1
 
 RDBQOSTRASC, RDBQOSTRDESC, RDBQONUMASC, RDBQONUMDESC = range(4)
+
+
+class TyrantError(Exception):
+    """Stores Tyrant result error codes
+
+    When Tokyo Tryant functions return a non-zero response code, you
+    get me!  Error codes from TokyoCabinet 1.4.41 in tcutil.c and
+    tcutil.h.
+
+    Fields:
+
+      * errno: Response code
+
+      * strerror: String representation of error code
+    """
+    ERROR_STRINGS = {
+        1: "threading error",
+        2: "invalid operation",
+        3: "file not found",
+        4: "no permission",
+        5: "invalid meta data",
+        6: "invalid record header",
+        7: "open error",
+        8: "close error",
+        9: "trunc error",
+        10: "sync error",
+        11: "stat error",
+        12: "seek error",
+        13: "read error",
+        14: "write error",
+        15: "mmap error",
+        16: "lock error",
+        17: "unlink error",
+        18: "rename error",
+        19: "mkdir error",
+        20: "rmdir error",
+        21: "existing record",
+        22: "no record found",
+        # technically not possible since the protocol is designed to
+        # pass us 8-bit responses >_>
+        9999: "miscellaneous error",
+    }
+
+    def __init__(self, response_code):
+        self.errno = response_code
+        self.strerror = self.ERROR_STRINGS[response_code]
+
+    def __repr__(self):
+        return "<%s: %d: %s>" % (self.__class__.__name__,
+                                 self.errno, self.strerror)
+
+    __str__ = __repr__
 
 
 class C(object):
